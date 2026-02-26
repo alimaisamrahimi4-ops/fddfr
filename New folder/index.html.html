@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جام فوتسال شاکی</title>
+    <style>
+        :root {
+            --primary: #1e40af; --gold: #f59e0b; --red: #ef4444;
+            --bg: #f1f5f9; --dark: #0f172a; --green: #059669; --white: #ffffff;
+        }
+        body { font-family: 'Tahoma', sans-serif; background-color: var(--bg); margin: 0; padding: 10px; color: var(--dark); line-height: 1.6; }
+        .container { max-width: 1200px; margin: auto; }
+        
+        .header-main { text-align: center; background: linear-gradient(135deg, var(--primary), #3b82f6); color: white; padding: 40px 20px; border-radius: 15px; margin-bottom: 20px; }
+        
+        .admin-panel { background: #fffbeb; border: 2px solid var(--gold); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .admin-input { padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 140px; text-align: center; }
+
+        .banned-box { background: #fee2e2; border: 2px solid var(--red); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; }
+        .banned-item { display: inline-block; background: white; color: var(--red); padding: 5px 12px; border-radius: 20px; font-weight: bold; margin: 5px; border: 1px solid var(--red); font-size: 0.85em; }
+
+        #adminAwardInput { display: none; margin-bottom: 20px; background: #f0fdf4; padding: 15px; border-radius: 10px; border: 1px dashed var(--green); }
+        .award-item { background: white; padding: 10px; border-radius: 8px; margin-bottom: 5px; border-right: 4px solid var(--gold); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .box { background: #f8fafc; padding: 15px; border-right: 5px solid var(--gold); border-radius: 8px; }
+
+        .card { background: var(--white); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 25px; border-top: 5px solid var(--primary); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background: var(--dark); color: white; padding: 12px; font-size: 0.85em; }
+        td { padding: 10px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+        .team-label { font-weight: bold; color: var(--primary); cursor: pointer; text-decoration: underline; }
+        .input-num { width: 45px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+
+        .knockout-title { text-align: center; padding: 12px; background: var(--dark); color: white; border-radius: 10px; margin-top: 30px; }
+        .bracket { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+        .match-box { background: white; padding: 15px; border-radius: 12px; border: 2px solid #cbd5e1; }
+        .match-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 90%; max-width: 500px; border-radius: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-main">
+        <h1>🏆 هیئت فوتسال شاکی</h1>
+        <h2>جام همبستگی جوانان - رمضان ۱۴۰۴</h2>
+    </div>
+
+    <div class="admin-panel">
+        <label>🔑 پنل مدیر:</label>
+        <input type="password" id="passInput" class="admin-input" placeholder="رمز عبور">
+        <button onclick="toggleLock()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">ورود</button>
+    </div>
+
+    <div id="banBox" class="banned-box card">
+        <h3 style="margin:0; color:var(--red);">🚫 لیست بازیکنان محروم</h3>
+        <div id="banList"></div>
+    </div>
+
+    <div class="grid-info">
+        <div class="card box">
+            <h3>👤 مسئولین اجرایی</h3>
+            <div style="font-size:0.9em;">•< <b>مسئول کل:</b> بشیر توسلی | • <b>مالی:</b> عارف حیدری | • <b>انضباط:</b> بخشایشی</div>
+        </div>
+        <div class="card box" style="border-right-color: var(--green);">
+            <h3>📋 سرپرستان (پوشاک یاسن)</h3>
+            <div style="font-size:0.8em;">سنائی: حسینی | پوشاک یاسن: عیسی اکبری | امید: حیدری | کوتل: رضایی</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="color: var(--gold)">🏅 تالار افتخارات</h3>
+        <div id="adminAwardInput">
+            <select id="awardTeamName" class="admin-input" style="width:180px">
+                <option value="">انتخاب تیم...</option>
+            </select>
+            <input type="text" id="awardTitle" class="admin-input" placeholder="مثلاً: بهترین بازیکن">
+            <button onclick="addAward()" style="background:var(--green); color:white; border:none; padding:8px 15px; border-radius:5px;">ثبت</button>
+        </div>
+        <div id="awardList"></div>
+    </div>
+
+    <div id="groups-container"></div>
+
+    <div class="knockout-section">
+        <h2 class="knockout-title">⚔️ مرحله یک‌چهارم نهایی</h2>
+        <div class="bracket" id="q-final"></div>
+        <h2 class="knockout-title" style="background:var(--green)">🔹 نیمه‌نهایی</h2>
+        <div class="bracket" id="semi-final"></div>
+        <h2 class="knockout-title" style="background:var(--gold)">🏆 فینال بزرگ</h2>
+        <div id="final-match"></div>
+    </div>
+
+    <button id="resetBtn" disabled onclick="clearData()" style="background:var(--red); color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; display:block; margin:40px auto; font-weight:bold; opacity:0.3">ریست کامل</button>
+</div>
+
+<div id="playerModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTeamName"></h3>
+        <div id="playerContainer" style="max-height:300px; overflow-y:auto"></div>
+        <div id="addPlayerSection" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:10px">
+            <input type="text" id="newPlayerName" placeholder="نام بازیکن" style="width:60%; padding:8px">
+            <button onclick="addPlayerToDB()" style="background:var(--green); color:white; border:none; padding:8px; border-radius:5px">➕ ثبت</button>
+        </div>
+        <button onclick="closeModal()" style="width:100%; margin-top:10px; padding:10px; background:var(--dark); color:white; border:none; border-radius:5px;">بستن</button>
+    </div>
+</div>
+
+<script>
+    // تغییر نام پوشاک به پوشاک یاسن در لیست اولیه
+    const groupsInit = { 
+        A: ["پوشاک یاسن", "پیشکسوتان", "سنگ زائیده", "امید", "چاده"], 
+        B: ["سنائی", "بید", "کوتل الف", "کوتل ب", "بیدره"] 
+    };
+    
+    let isAdmin = false;
+    let currentG = ''; let currentI = -1;
+
+    let db = JSON.parse(localStorage.getItem('shaki_v2026_final')) || {
+        A: groupsInit.A.map(n => ({ name:n, p:0, w:0, d:0, df:0, players: [] })),
+        B: groupsInit.B.map(n => ({ name:n, p:0, w:0, d:0, df:0, players: [] })),
+        k: {},
+        awards: []
+    };
+
+    function toggleLock() {
+        if(document.getElementById('passInput').value === "shaki 2020") {
+            isAdmin = true;
+            document.getElementById('addPlayerSection').style.display = "block";
+            document.getElementById('adminAwardInput').style.display = "block";
+            document.getElementById('resetBtn').disabled = false;
+            document.getElementById('resetBtn').style.opacity = "1";
+            render();
+            alert("پنل مدیریت فعال شد");
+        } else alert("رمز اشتباه!");
+    }
+
+    function save() {
+        localStorage.setItem('shaki_v2026_final', JSON.stringify(db));
+        render();
+    }
+
+    function upd(g, i, f, v) { db[g][i][f] = parseInt(v) || 0; save(); }
+    function updK(id, v) { db.k[id] = v; localStorage.setItem('shaki_v2026_final', JSON.stringify(db)); }
+
+    function render() {
+        const container = document.getElementById('groups-container');
+        container.innerHTML = '';
+        ['A', 'B'].forEach(g => {
+            let rows = db[g].map((t, idx) => {
+                let ty = t.players ? t.players.reduce((s, p) => s + (p.y || 0), 0) : 0;
+                let tr = t.players ? t.players.reduce((s, p) => s + (p.r || 0), 0) : 0;
+                return `<tr><td class="team-label" onclick="openPlayerModal('${g}',${idx})">${t.name}</td>
+                    <td><input type="number" class="input-num" ${!isAdmin?'disabled':''} value="${t.p}" onchange="upd('${g}',${idx},'p',this.value)"></td>
+                    <td><input type="number" class="input-num" ${!isAdmin?'disabled':''} value="${t.w}" onchange="upd('${g}',${idx},'w',this.value)"></td>
+                    <td><input type="number" class="input-num" ${!isAdmin?'disabled':''} value="${t.df}" onchange="upd('${g}',${idx},'df',this.value)"></td>
+                    <td style="color:var(--gold)">🟨${ty}</td><td style="color:var(--red)">🟥${tr}</td>
+                    <td style="font-weight:bold">${(t.w*3)}</td></tr>`;
+            }).join('');
+            container.innerHTML += `<div class="card"><h3>گروه ${g}</h3><div style="overflow-x:auto"><table><thead><tr><th>تیم</th><th>بازی</th><th>برد</th><th>تفاضل</th><th>زرد</th><th>قرمز</th><th>امتیاز</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+        });
+
+        const awardDiv = document.getElementById('awardList');
+        awardDiv.innerHTML = '';
+        if (db.awards && db.awards.length > 0) {
+            db.awards.forEach((a, index) => {
+                awardDiv.innerHTML += `<div class="award-item"><span><b>${a.team}:</b> ${a.title}</span>
+                    ${isAdmin ? `<button onclick="delAward(${index})" style="background:none; border:none; color:red; cursor:pointer;">🗑️</button>` : ''}</div>`;
+            });
+        }
+
+        const renderBox = (targetId, count, prefix, label) => {
+            const el = document.getElementById(targetId); el.innerHTML = '';
+            for(let i=1; i<=count; i++) {
+                el.innerHTML += `<div class="match-box"><small>${label} ${i}</small>
+                    <div class="match-row"><input type="text" ${!isAdmin?'disabled':''} placeholder="تیم ۱" value="${db.k[prefix+i+'t1']||''}" onchange="updK('${prefix}${i}t1',this.value)"> <input type="number" class="input-num" ${!isAdmin?'disabled':''} value="${db.k[prefix+i+'s1']||0}" onchange="updK('${prefix}${i}s1',this.value)"></div>
+                    <div class="match-row"><input type="text" ${!isAdmin?'disabled':''} placeholder="تیم ۲" value="${db.k[prefix+i+'t2']||''}" onchange="updK('${prefix}${i}t2',this.value)"> <input type="number" class="input-num" ${!isAdmin?'disabled':''} value="${db.k[prefix+i+'s2']||0}" onchange="updK('${prefix}${i}s2',this.value)"></div></div>`;
+            }
+        };
+        renderBox('q-final', 4, 'q', 'بازی');
+        renderBox('semi-final', 2, 's', 'نیمه‌نهایی');
+
+        document.getElementById('final-match').innerHTML = `<div class="match-box" style="border:3px solid var(--gold); max-width:400px; margin:auto">
+                <div class="match-row"><input type="text" ${!isAdmin?'disabled':''} placeholder="تیم ۱" value="${db.k.ft1||''}" onchange="updK('ft1',this.value)"> <input type="number" class="input-num" ${!isAdmin?'disabled':''} value="${db.k.fs1||0}" onchange="updK('fs1',this.value)"></div>
+                <div style="text-align:center; font-weight:bold; color:var(--gold)">VS</div>
+                <div class="match-row"><input type="text" ${!isAdmin?'disabled':''} placeholder="تیم ۲" value="${db.k.ft2||''}" onchange="updK('ft2',this.value)"> <input type="number" class="input-num" ${!isAdmin?'disabled':''} value="${db.k.fs2||0}" onchange="updK('fs2',this.value)"></div></div>`;
+        
+        updateBanList();
+    }
+
+    function addAward() {
+        const team = document.getElementById('awardTeamName').value;
+        const title = document.getElementById('awardTitle').value;
+        if(team && title) { if(!db.awards) db.awards = []; db.awards.push({ team, title }); save(); }
+    }
+
+    function delAward(index) { if(confirm("حذف؟")) { db.awards.splice(index, 1); save(); } }
+
+    function updateBanList() {
+        let bans = [];
+        ['A','B'].forEach(g => db[g].forEach(t => {
+            if(t.players) t.players.forEach(p => {
+                if((p.y >= 3) || (p.r >= 1)) bans.push(`${p.name} (${t.name})`);
+            });
+        }));
+        const box = document.getElementById('banBox');
+        if(bans.length > 0) {
+            document.getElementById('banList').innerHTML = bans.map(n => `<span class="banned-item">${n}</span>`).join('');
+            box.style.display = "block";
+        } else box.style.display = "none";
+    }
+
+    function openPlayerModal(g, i) {
+        currentG = g; currentI = i; const t = db[g][i];
+        document.getElementById('modalTeamName').innerText = "بازیکنان " + t.name;
+        const pc = document.getElementById('playerContainer'); pc.innerHTML = '';
+        if(!t.players) t.players = [];
+        t.players.forEach((p, pi) => {
+            pc.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #eee; padding:5px;">
+                <span><b>${p.name}</b></span>
+                <div>
+                    <button onclick="card(${pi},'y')" style="background:var(--gold); border:none; padding:4px 8px;">🟨 ${p.y||0}</button>
+                    <button onclick="card(${pi},'r')" style="background:var(--red); color:white; border:none; padding:4px 8px;">🟥 ${p.r||0}</button>
+                    ${isAdmin?`<button onclick="delP(${pi})" style="color:red; background:none; border:none; margin-right:5px;">🗑️</button>`:''}
+                </div></div>`;
+        });
+        document.getElementById('playerModal').style.display = "block";
+    }
+
+    function addPlayerToDB() {
+        const n = document.getElementById('newPlayerName').value;
+        if(n && isAdmin) {
+            if(!db[currentG][currentI].players) db[currentG][currentI].players = [];
+            db[currentG][currentI].players.push({name:n, y:0, r:0});
+            document.getElementById('newPlayerName').value = ''; save(); openPlayerModal(currentG,currentI);
+        }
+    }
+
+    function card(pi, type) { if(!isAdmin) return; db[currentG][currentI].players[pi][type] = (db[currentG][currentI].players[pi][type] || 0) + 1; save(); openPlayerModal(currentG,currentI); }
+    function delP(pi) { if(isAdmin && confirm("حذف؟")) { db[currentG][currentI].players.splice(pi,1); save(); openPlayerModal(currentG,currentI); } }
+    function closeModal() { document.getElementById('playerModal').style.display = "none"; }
+    function clearData() { if(confirm("ریست کامل؟")) { localStorage.clear(); location.reload(); } }
+
+    const sel = document.getElementById('awardTeamName');
+    [...groupsInit.A, ...groupsInit.B].forEach(t => sel.innerHTML += `<option value="${t}">${t}</option>`);
+
+    render();
+</script>
+</body>
+</html>
